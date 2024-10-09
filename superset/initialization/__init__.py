@@ -483,6 +483,7 @@ class SupersetAppInitializer:  # pylint: disable=too-many-public-methods
         self.configure_wtf()
         self.configure_middlewares()
         self.configure_cache()
+        self.configure_authentication()
 
         with self.superset_app.app_context():
             self.init_app_in_ctx()

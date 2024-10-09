@@ -1,17 +1,20 @@
-from flask import Flask, g, request
+from flask import Flask, g, request, session
+from flask_login import login_user
 
-from superset import security_manager
+from superset.extensions import security_manager
 
 
 class BepaAuthentication:
     @staticmethod
     def init_app(app: Flask) -> None:
+        return
         @app.before_request
         def authenticate_bepa():
-            if not g.user:
-                cookie_value = request.cookies.get(
-                    'session_token')  # Replace with your cookie name
-                if cookie_value:
-                    user = security_manager.authenticate_with_cookie(cookie_value)
-                    if user:
-                        g.user = user
+            user_id = session.get("_user_id")
+            print("Is there a user? " + str(user_id))
+
+            if user_id:
+                user = security_manager.get_user_by_id(user_id)
+                if user:
+                    print(user)
+                    g.user = user

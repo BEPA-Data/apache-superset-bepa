@@ -207,35 +207,18 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
     SecurityManager
 ):
     # BEPA authentication
-    def authenticate_with_cookie(self, cookie_value):
-        print("test")
-        # Call your API to get the user ID and role using the cookie
-        response = requests.get('your_api_url', headers={"Authorization": f"Bearer {cookie_value}"})
-
-        if response.status_code == 200:
-            user_data = response.json()
-            user_id = user_data['id']  # Get the ID from the API response
-            role_name = user_data['role']  # Get the role from the API response
-
-            # Retrieve or create the user based on the ID
-            user = self.get_user_by_id(user_id)
-            if not user:
-                user = self.create_user(user_id, role_name)
-
-            return user
-        return None
-
     def create_user(self, user_id, role_name):
-        # You may need to customize how you handle roles
-        role = self.get_role(role_name) or self.create_role(role_name)
+        # Get or create role
+        role = self.find_role(role_name)
 
         # Create the user
         new_user = User(
             id=user_id,
-            first_name="fn",
+            first_name=f"fn{user_id}",
             last_name="ln",
             email="name@domain.com",
             username="test",
+            password="test",
             roles=[role],
         )
 
@@ -243,15 +226,6 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
         self.get_session.commit()
 
         return new_user
-
-    def get_role(self, role_name):
-        return self.get_session.query(Role).filter_by(name=role_name).first()
-
-    def create_role(self, role_name):
-        new_role = Role(name=role_name)
-        self.get_session.add(new_role)
-        self.get_session.commit()
-        return new_role
 
 
     userstatschartview = None
@@ -463,6 +437,10 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
         database_name: str,
     ) -> Optional[str]:
         return f"[{database_name}].[{dataset_name}](id:{dataset_id})"
+    
+    def is_authenticated(self) -> bool:
+        user = g.user
+        return not user.is_anonymous
 
     def can_access(self, permission_name: str, view_name: str) -> bool:
         """
