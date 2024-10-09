@@ -8,7 +8,6 @@ from flask_appbuilder.views import expose
 from flask import (
     redirect,
     request, g,
-    url_for
 )
 
 class BEPASecurityManager(SupersetSecurityManager):
@@ -31,7 +30,7 @@ class AuthBEPAView(AuthDBView):
 
         # if response.status_code == 200:
         # user_data = response.json()
-        user_data = {'id': 5, 'role': 'Admin'}
+        user_data = {'id': 2, 'role': 'Admin'}
         user_id = user_data['id']  # Get the ID from the API response
         role_name = user_data['role']  # Get the role from the API response
 
@@ -42,7 +41,6 @@ class AuthBEPAView(AuthDBView):
 
         login_user(user)
 
-        print("Logged in user")
         next_url = get_safe_redirect(request.args.get("next", ""))
         return redirect(next_url)
 

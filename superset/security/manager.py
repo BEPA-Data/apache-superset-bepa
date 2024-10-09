@@ -216,8 +216,9 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
             id=user_id,
             first_name=f"fn{user_id}",
             last_name="ln",
-            email="name@domain.com",
-            username="test",
+            email=f"name{user_id}@domain.com",
+            active=True,
+            username=f"test{user_id}",
             password="test",
             roles=[role],
         )
