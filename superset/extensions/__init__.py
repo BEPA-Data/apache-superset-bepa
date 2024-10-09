@@ -139,14 +139,3 @@ ssh_manager_factory = SSHManagerFactory()
 stats_logger_manager = BaseStatsLoggerManager()
 talisman = Talisman()
 
-
-# BEPA Authentication
-@before_request
-def authenticate_bepa():
-    if not g.user:
-        cookie_value = request.cookies.get(
-            'session_token')  # Replace with your cookie name
-        if cookie_value:
-            user = appbuilder.sm.authenticate_with_cookie(cookie_value)
-            if user:
-                g.user = user

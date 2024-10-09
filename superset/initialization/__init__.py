@@ -31,6 +31,7 @@ from flask_compress import Compress
 from flask_session import Session
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+from superset.authentication.bepa_authentication import BepaAuthentication
 from superset.constants import CHANGE_ME_SECRET_KEY
 from superset.extensions import (
     _event_logger,
@@ -515,6 +516,9 @@ class SupersetAppInitializer:  # pylint: disable=too-many-public-methods
     def configure_cache(self) -> None:
         cache_manager.init_app(self.superset_app)
         results_backend_manager.init_app(self.superset_app)
+
+    def configure_authentication(self) -> None:
+        BepaAuthentication.init_app(self.superset_app)
 
     def configure_feature_flags(self) -> None:
         feature_flag_manager.init_app(self.superset_app)
