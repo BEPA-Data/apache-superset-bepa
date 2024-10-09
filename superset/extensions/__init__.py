@@ -19,8 +19,9 @@ import os
 from typing import Any, Callable, Optional
 
 import celery
-from flask import Flask
+from flask import Flask, request, g
 from flask_appbuilder import AppBuilder, SQLA
+from flask_appbuilder.hooks import before_request
 from flask_caching.backends.base import BaseCache
 from flask_migrate import Migrate
 from flask_talisman import Talisman
@@ -137,3 +138,15 @@ security_manager: SupersetSecurityManager = LocalProxy(lambda: appbuilder.sm)
 ssh_manager_factory = SSHManagerFactory()
 stats_logger_manager = BaseStatsLoggerManager()
 talisman = Talisman()
+
+
+# BEPA Authentication
+@before_request
+def authenticate_bepa():
+    if not g.user:
+        cookie_value = request.cookies.get(
+            'session_token')  # Replace with your cookie name
+        if cookie_value:
+            user = appbuilder.sm.authenticate_with_cookie(cookie_value)
+            if user:
+                g.user = user
