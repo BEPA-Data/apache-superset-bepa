@@ -25,7 +25,7 @@ from typing import Any, Callable, cast, NamedTuple, Optional, TYPE_CHECKING
 
 import requests
 from flask import current_app, Flask, g, Request
-from flask_appbuilder import Model
+from flask_appbuilder import Model, const
 from flask_appbuilder.security.sqla.manager import SecurityManager
 from flask_appbuilder.security.sqla.models import (
     assoc_permissionview_role,
@@ -206,27 +206,58 @@ def query_context_modified(query_context: "QueryContext") -> bool:
 class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
     SecurityManager
 ):
+    EXTERNAL_ROLES = ["Admin", "Alpha", "Gamma"]
+
     # BEPA authentication
-    def create_user(self, user_id, role_name):
-        # Get or create role
+    def create_user(self, user_id, role_name) -> User | None:
+        try:
+            # Get role
+            role = self.find_role(role_name)
+
+            # Create the user
+            new_user = User(
+                id=user_id,
+                first_name=f"fn{user_id}",
+                last_name="ln",
+                email=f"name{user_id}@domain.com",
+                active=True,
+                username=f"test{user_id}",
+                password="test",
+                roles=[role],
+            )
+
+            self.get_session.add(new_user)
+            self.get_session.commit()
+            logger.info(const.LOGMSG_INF_SEC_ADD_USER, new_user.username)
+            return new_user
+        except Exception as e:
+            logger.error(const.LOGMSG_ERR_SEC_ADD_USER, e)
+            self.get_session.rollback()
+            return None
+    
+    def change_user_external_role(self, user_id, role_name):
+        # Check if role is external.
+        if role_name not in self.EXTERNAL_ROLES:
+            return
+
+        # Get user.
+        user = self.get_user_by_id(user_id)
+
+        # Check if user already has role.
+        existing_roles = [role for role in user.roles if role.name == role_name]
+        if len(existing_roles) > 0:
+            return
+        
+        # Remove all external roles that user has.
+        non_external_roles = [role for role in user.roles if role.name not in self.EXTERNAL_ROLES]
+        user.roles = non_external_roles
+
+        # Add role
         role = self.find_role(role_name)
+        user.roles.append(role)
 
-        # Create the user
-        new_user = User(
-            id=user_id,
-            first_name=f"fn{user_id}",
-            last_name="ln",
-            email=f"name{user_id}@domain.com",
-            active=True,
-            username=f"test{user_id}",
-            password="test",
-            roles=[role],
-        )
-
-        self.get_session.add(new_user)
-        self.get_session.commit()
-
-        return new_user
+        # Save user
+        self.update_user(user)
 
 
     userstatschartview = None
