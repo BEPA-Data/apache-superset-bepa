@@ -4,7 +4,7 @@ from flask_login import login_user
 
 from superset.authentication.bepa_authentication_server import UserData, fetch_user_info
 from superset.security import SupersetSecurityManager
-from flask_appbuilder.security.views import AuthDBView
+from flask_appbuilder.security.views import AuthDBView, UserModelView
 from flask_appbuilder.views import expose
 from flask import (
     redirect,
@@ -16,6 +16,7 @@ class BEPASecurityManager(SupersetSecurityManager):
     def __init__(self, appbuilder):
         super(BEPASecurityManager, self).__init__(appbuilder)
         self.authdbview = AuthBEPAView
+        self.userdbmodelview = UserBEPAModelView
 
 class AuthBEPAView(AuthDBView):
 
@@ -49,3 +50,5 @@ class AuthBEPAView(AuthDBView):
         next_url = get_safe_redirect(request.args.get("next", ""))
         return redirect(next_url)
 
+class UserBEPAModelView(UserModelView):
+    pass
