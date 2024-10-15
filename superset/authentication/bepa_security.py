@@ -12,22 +12,34 @@ from flask_babel import lazy_gettext
 from flask import (
     redirect,
     request, g,
+    session,
 )
 
 class BEPASecurityManager(SupersetSecurityManager):
 
     def __init__(self, appbuilder):
+        @appbuilder.get_app.before_request
+        def cleanup_session():
+            # Check if session exists.
+            session_user_id = session.get("_user_id")
+            if session_user_id is not None:
+                # Check if user assigned to session still exists. Flask will break if the user of the session is deleted.
+                session_user = appbuilder.sm.get_user_by_id(session_user_id)
+                if session_user is None:
+                    session.pop("_user_id")
+
         self.userdbmodelview = UserBEPAModelView
         self.authdbview = AuthBEPAView
         super(BEPASecurityManager, self).__init__(appbuilder)
+
 
 class AuthBEPAView(AuthDBView):
 
     @expose('/login/', methods=['GET', 'POST'])
     @no_cache
     def login(self, flag=True):
+        # Check if user is already authenticated.
         if g.user is not None and g.user.is_authenticated:
-            print("User already authenticated")
             return redirect(self.appbuilder.get_url_for_index)
 
         # Call API to get the user ID and role using the cookie
