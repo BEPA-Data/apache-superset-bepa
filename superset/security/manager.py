@@ -353,7 +353,7 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
         "datasource_access",
     }
 
-    ACCESSIBLE_PERMS = {"can_userinfo", "resetmypassword", "can_recent_activity"}
+    ACCESSIBLE_PERMS = {"can_userinfo", "can_recent_activity"}
 
     SQLLAB_ONLY_PERMISSIONS = {
         ("can_read", "SavedQuery"),

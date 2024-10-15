@@ -55,6 +55,7 @@ class AuthBEPAView(AuthDBView):
 
 class UserBEPAModelView(ModelView):
     route_base = "/users"
+    base_permissions = ['can_userinfo', 'can_list','can_show', 'can_edit', 'userinfoedit', 'can_download']
 
     list_title = lazy_gettext("List Users")
     show_title = lazy_gettext("Show User")
