@@ -1,4 +1,5 @@
 from flask_appbuilder.security.decorators import has_access, no_cache
+from flask_appbuilder._compat import as_unicode
 from flask_appbuilder.utils.base import get_safe_redirect, lazy_formatter_gettext
 from flask_login import login_user
 
@@ -13,6 +14,7 @@ from flask import (
     redirect,
     request, g,
     session,
+    flash,
 )
 
 class BEPASecurityManager(SupersetSecurityManager):
@@ -35,7 +37,9 @@ class BEPASecurityManager(SupersetSecurityManager):
 
 class AuthBEPAView(AuthDBView):
 
-    @expose('/login/', methods=['GET', 'POST'])
+    login_template = "appbuilder/general/security/login_bepa_no_user.html"
+
+    @expose('/login/')
     @no_cache
     def login(self, flag=True):
         # Check if user is already authenticated.
@@ -46,6 +50,13 @@ class AuthBEPAView(AuthDBView):
         # cookie_value = request.cookies["bepa_session"]
         cookie_value = "test_cookie"
         user_data: UserData = fetch_user_info(cookie_value)
+
+        if user_data is None:
+            flash(as_unicode(self.invalid_login_message), "warning")
+            return self.render_template(
+                self.login_template, title=lazy_gettext("User not found."), appbuilder=self.appbuilder
+            )
+            pass
 
         user_id = user_data.ID  # Get the ID from the API response
         role_name = user_data.role  # Get the role from the API response

@@ -16,8 +16,15 @@ class UserData(BaseModel):
     ID: str
     role: UserRole
 
-def fetch_user_info(session_token: str) -> UserData:
-    response = requests.get(BEPA_AUTH_URL, headers={"Authorization": f"Bearer {session_token}"}, timeout=5)
+def fetch_user_info(session_token: str) -> UserData | None:
+    try:
+        response = requests.get(BEPA_AUTH_URL, headers={"Authorization": f"Bearer {session_token}"}, timeout=5)
 
-    data = UserData.model_validate(response.json())
-    return data
+        if response.status_code == 200:
+            data = UserData.model_validate(response.json())
+            return data
+        else:
+            return None
+    
+    except:
+        return None
