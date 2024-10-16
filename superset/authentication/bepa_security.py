@@ -49,7 +49,7 @@ class AuthBEPAView(AuthDBView):
         # Call API to get the user ID and role using the cookie
         # cookie_value = request.cookies["bepa_session"]
         cookie_value = "test_cookie"
-        user_data: UserData = fetch_user_info(cookie_value)
+        user_data: UserData = fetch_user_info(cookie_value, self.appbuilder.get_app)
 
         if user_data is None:
             flash(as_unicode(self.invalid_login_message), "warning")
