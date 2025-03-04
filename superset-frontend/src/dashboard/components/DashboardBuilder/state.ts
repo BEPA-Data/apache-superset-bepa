@@ -40,6 +40,9 @@ export const useNativeFilters = () => {
     expandFilters ?? !!filterValues.length,
   );
 
+  const expandChat = getUrlParam(URL_PARAMS.expandChat);
+  const [chatOpen, setChatOpen] = useState(!!expandChat);
+
   const nativeFiltersEnabled =
     canEdit || (!canEdit && filterValues.length !== 0);
 
@@ -61,6 +64,13 @@ export const useNativeFilters = () => {
     },
     [dashboardFiltersOpen],
   );
+
+  const toggleChatOpen = useCallback(
+    (visible?: boolean) => {
+      setChatOpen(open => visible ?? !open);
+    },
+    []
+  )
 
   useEffect(() => {
     if (
@@ -85,5 +95,7 @@ export const useNativeFilters = () => {
     dashboardFiltersOpen,
     toggleDashboardFiltersOpen,
     nativeFiltersEnabled,
+    chatOpen,
+    toggleChatOpen,
   };
 };

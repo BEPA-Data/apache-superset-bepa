@@ -45,6 +45,11 @@ export const BUILDER_SIDEPANEL_WIDTH = 374;
 export const OVERWRITE_INSPECT_FIELDS = ['css', 'json_metadata.filter_scopes'];
 export const EMPTY_CONTAINER_Z_INDEX = 10;
 
+export const CLOSED_CHAT_BAR_WIDTH = 32;
+export const OPEN_CHAT_BAR_WIDTH = 260;
+export const OPEN_CHAT_BAR_MAX_WIDTH = 550;
+export const CHAT_BAR_HEADER_HEIGHT = 80;
+
 export const DEFAULT_CROSS_FILTER_SCOPING: NativeFilterScope = {
   rootPath: [DASHBOARD_ROOT_ID],
   excluded: [],

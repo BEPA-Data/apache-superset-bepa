@@ -80,7 +80,7 @@ const CollapsedBar = styled.div<{ offset: number }>`
     position: absolute;
     top: ${offset}px;
     left: 0;
-    height: 100%;
+    
     width: ${theme.gridUnit * 8}px;
     padding-top: ${theme.gridUnit * 2}px;
     display: none;

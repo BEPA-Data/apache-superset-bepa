@@ -28,7 +28,6 @@ import {
   styled,
   t,
   useTheme,
-  useElementOnScreen,
 } from '@superset-ui/core';
 import { Global } from '@emotion/react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -70,17 +69,19 @@ import ResizableSidebar from 'src/components/ResizableSidebar';
 import {
   BUILDER_SIDEPANEL_WIDTH,
   CLOSED_FILTER_BAR_WIDTH,
-  FILTER_BAR_HEADER_HEIGHT,
-  MAIN_HEADER_HEIGHT,
   OPEN_FILTER_BAR_MAX_WIDTH,
   OPEN_FILTER_BAR_WIDTH,
   EMPTY_CONTAINER_Z_INDEX,
+  CLOSED_CHAT_BAR_WIDTH,
+  OPEN_CHAT_BAR_WIDTH,
+  OPEN_CHAT_BAR_MAX_WIDTH,
 } from 'src/dashboard/constants';
 import BasicErrorAlert from 'src/components/ErrorMessage/BasicErrorAlert';
 import { getRootLevelTabsComponent, shouldFocusTabs } from './utils';
 import DashboardContainer from './DashboardContainer';
 import { useNativeFilters } from './state';
 import DashboardWrapper from './DashboardWrapper';
+import AssistantChat from '../AssistantChat';
 
 type DashboardBuilderProps = {};
 
@@ -93,10 +94,20 @@ const FiltersPanel = styled.div<{ width: number; hidden: boolean }>`
   ${({ hidden }) => hidden && `display: none;`}
 `;
 
-const StickyPanel = styled.div<{ width: number }>`
+// @z-index-above-dashboard-charts + 1 = 11
+const ChatPanel = styled.div<{ width: number; hidden: boolean }>`
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  z-index: 11;
+  width: ${({ width }) => width}px;
+  ${({ hidden }) => hidden && `display: none;`}
+`;
+
+const StickyPanel = styled.div<{ width: number, height: string }>`
   position: sticky;
   top: -1px;
   width: ${({ width }) => width}px;
+  height: ${({ height }) => height};
   flex: 0 0 ${({ width }) => width}px;
 `;
 
@@ -282,8 +293,9 @@ const DashboardContentWrapper = styled.div`
 const StyledDashboardContent = styled.div<{
   editMode: boolean;
   marginLeft: number;
+  marginRight: number;
 }>`
-  ${({ theme, editMode, marginLeft }) => css`
+  ${({ theme, editMode, marginLeft, marginRight }) => css`
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
@@ -301,7 +313,7 @@ const StyledDashboardContent = styled.div<{
       flex: 1;
       position: relative;
       margin-top: ${theme.gridUnit * 6}px;
-      margin-right: ${theme.gridUnit * 8}px;
+      margin-right: ${marginRight}px;
       margin-bottom: ${theme.gridUnit * 6}px;
       margin-left: ${marginLeft}px;
 
@@ -467,21 +479,41 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
     dashboardFiltersOpen,
     toggleDashboardFiltersOpen,
     nativeFiltersEnabled,
+    chatOpen,
+    toggleChatOpen,
   } = useNativeFilters();
 
-  const [containerRef, isSticky] = useElementOnScreen<HTMLDivElement>({
-    threshold: [1],
-  });
+  const filterContainerRef = useRef<HTMLDivElement>(null);
+  const [filterBarSize, setFilterBarSize] = useState(0);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [chatBarSize, setChatBarSize] = useState(0);
+  useEffect(() => {
+    setFilterBarSize(filterContainerRef.current?.getBoundingClientRect()?.top || 0);
+    setChatBarSize(chatContainerRef.current?.getBoundingClientRect()?.top || 0);
+
+    const onScroll = () => {
+      setFilterBarSize(filterContainerRef.current?.getBoundingClientRect()?.top || 0);
+      setChatBarSize(chatContainerRef.current?.getBoundingClientRect()?.top || 0);
+    }
+
+    document.addEventListener('scroll', onScroll);
+
+    return () => {
+      document.removeEventListener('scroll', onScroll);
+    };
+  }, [filterContainerRef, chatContainerRef]);
 
   const showFilterBar =
     (crossFiltersEnabled || nativeFiltersEnabled) && !editMode;
 
-  const offset =
-    FILTER_BAR_HEADER_HEIGHT +
-    (isSticky || standaloneMode ? 0 : MAIN_HEADER_HEIGHT);
-
-  const filterBarHeight = `calc(100vh - ${offset}px)`;
+  const filterBarHeight = `calc(100vh - ${filterBarSize}px)`;
   const filterBarOffset = dashboardFiltersOpen ? 0 : barTopOffset + 20;
+
+
+  const showChatBar = !editMode;
+
+  const chatBarHeight = `calc(100vh - ${chatBarSize}px)`;
+  const chatBarOffset = chatOpen ? 0 : barTopOffset + 20;
 
   const draggableStyle = useMemo(
     () => ({
@@ -492,12 +524,17 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
         filterBarOrientation === FilterBarOrientation.Horizontal
           ? 0
           : -32,
+      marginRight:
+        chatOpen || editMode
+          ? 0
+          : -CLOSED_CHAT_BAR_WIDTH,
     }),
     [
       dashboardFiltersOpen,
       editMode,
       filterBarOrientation,
       nativeFiltersEnabled,
+      chatOpen,
     ],
   );
 
@@ -581,6 +618,11 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
       ? 0
       : theme.gridUnit * 8;
 
+  const dashboardContentMarginRight = 
+    !chatOpen && !editMode 
+      ? 0 
+      : CLOSED_CHAT_BAR_WIDTH;
+
   return (
     <DashboardWrapper>
       {showFilterBar &&
@@ -603,7 +645,7 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
                     hidden={isReport}
                     data-test="dashboard-filters-panel"
                   >
-                    <StickyPanel ref={containerRef} width={filterBarWidth}>
+                    <StickyPanel ref={filterContainerRef} height={filterBarHeight} width={filterBarWidth}>
                       <ErrorBoundary>
                         <FilterBar
                           orientation={FilterBarOrientation.Vertical}
@@ -611,7 +653,7 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
                             filtersOpen: dashboardFiltersOpen,
                             toggleFiltersBar: toggleDashboardFiltersOpen,
                             width: filterBarWidth,
-                            height: filterBarHeight,
+                            height: '100%',
                             offset: filterBarOffset,
                           }}
                         />
@@ -674,6 +716,7 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
             className="dashboard-content"
             editMode={editMode}
             marginLeft={dashboardContentMarginLeft}
+            marginRight={dashboardContentMarginRight}
           >
             {showDashboard ? (
               missingInitialFilters.length > 0 ? (
@@ -709,6 +752,44 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
           </StyledDashboardContent>
         </DashboardContentWrapper>
       </StyledContent>
+      {showChatBar && (
+        <>
+          <ResizableSidebar
+            id={`dashboard-builder:${dashboardId}`}
+            enable={chatOpen}
+            initialWidth={OPEN_CHAT_BAR_WIDTH}
+            minWidth={OPEN_CHAT_BAR_WIDTH}
+            maxWidth={OPEN_CHAT_BAR_MAX_WIDTH}
+            right={true}
+          >
+            {adjustedWidth => {
+              const chatBarWidth = chatOpen
+              ? adjustedWidth
+              : CLOSED_CHAT_BAR_WIDTH;
+              return (
+                <ChatPanel
+                  width={chatBarWidth}
+                  hidden={isReport}
+                  data-test="dashboard-filters-panel"
+                >
+                  <StickyPanel ref={chatContainerRef} width={chatBarWidth} height={chatBarHeight}>
+                    <ErrorBoundary>
+                      <AssistantChat
+                        isInitialized={true}
+                        chatOpen={chatOpen}
+                        toggleChatBar={toggleChatOpen}
+                        width={chatBarWidth}
+                        offset={chatBarOffset}
+                        height={'100%'}
+                      />
+                    </ErrorBoundary>
+                  </StickyPanel>
+                </ChatPanel>
+              );
+            }}
+          </ResizableSidebar>
+        </>
+      )}
       {dashboardIsSaving && (
         <Loading
           css={css`

@@ -21,9 +21,12 @@ import { Resizable } from 're-resizable';
 import { styled } from '@superset-ui/core';
 import useStoredSidebarWidth from './useStoredSidebarWidth';
 
-const ResizableWrapper = styled.div`
+const ResizableWrapper = styled.div<{
+  right?: boolean;
+}>`
   position: absolute;
   height: 100%;
+  ${({ right }) => (right ? 'right: 0;' : 'left: 0;')}
 
   :hover .sidebar-resizer::after {
     background-color: ${({ theme }) => theme.colors.primary.base};
@@ -49,6 +52,7 @@ type Props = {
   enable: boolean;
   minWidth?: number;
   maxWidth?: number;
+  right?: boolean;
   children: (width: number) => ReactNode;
 };
 
@@ -58,16 +62,17 @@ const ResizableSidebar: FC<Props> = ({
   minWidth,
   maxWidth,
   enable,
+  right = false,
   children,
 }) => {
   const [width, setWidth] = useStoredSidebarWidth(id, initialWidth);
 
   return (
     <>
-      <ResizableWrapper>
+      <ResizableWrapper right={right} >
         <Resizable
-          enable={{ right: enable }}
-          handleClasses={{ right: 'sidebar-resizer' }}
+          enable={{ right: (enable && !right), left: (enable && right) }}
+          handleClasses={{ right: (right ? undefined : 'sidebar-resizer'), left: (right ? 'sidebar-resizer' : undefined) }}
           size={{ width, height: '100%' }}
           minWidth={minWidth}
           maxWidth={maxWidth}
