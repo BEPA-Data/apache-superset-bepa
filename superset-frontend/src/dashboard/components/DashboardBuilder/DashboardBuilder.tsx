@@ -109,6 +109,7 @@ const StickyPanel = styled.div<{ width: number, height: string }>`
   width: ${({ width }) => width}px;
   height: ${({ height }) => height};
   flex: 0 0 ${({ width }) => width}px;
+  transition: height 0.3s;
 `;
 
 // @z-index-above-dashboard-popovers (99) + 1 = 100
@@ -481,6 +482,8 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
     nativeFiltersEnabled,
     chatOpen,
     toggleChatOpen,
+    messages,
+    sendMessage,
   } = useNativeFilters();
 
   const filterContainerRef = useRef<HTMLDivElement>(null);
@@ -781,6 +784,8 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
                         width={chatBarWidth}
                         offset={chatBarOffset}
                         height={'100%'}
+                        messages={messages}
+                        sendMessage={sendMessage}
                       />
                     </ErrorBoundary>
                   </StickyPanel>

@@ -1,4 +1,4 @@
-import { createContext, CSSProperties, FC, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { createContext, FC, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { styled, t } from '@superset-ui/core';
 import Icons from 'src/components/Icons';
 import cx from 'classnames';
@@ -7,6 +7,7 @@ import Header from "./Header";
 import { throttle } from 'lodash';
 import Chat from "./Chat";
 import { CSSObject } from "@emotion/react";
+import { Message } from "./Chat/types";
 
 
 const BarWrapper = styled.div<{ width: number }>`
@@ -90,6 +91,8 @@ interface Props {
     toggleChatBar: (b: boolean) => void;
     offset: number;
     chatOpen: boolean;
+    messages: Message[];
+    sendMessage: (message: string) => void;
 }
 
 const AssistentBar: FC<Props> = ({
@@ -98,6 +101,8 @@ const AssistentBar: FC<Props> = ({
     toggleChatBar,
     offset,
     chatOpen,
+    messages,
+    sendMessage,
 }) => {
     const openChatBar = useCallback(
         () => toggleChatBar(true),
@@ -157,32 +162,7 @@ const AssistentBar: FC<Props> = ({
                     </div>
                     ) : (
                     <div css={tabPaneStyle} onScroll={onScroll} >
-                        <Chat messages={[
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test", align: "left"}, 
-                            {text: "test send by you", align: "right"},
-                            {text: "test send by you with multiple lines, like as long as possible so it covers even more than 2 lines", align: "right"},
-                            ]} />
+                        <Chat messages={messages} sendMessage={sendMessage} />
                     </div>
                     )}
                 </Bar>

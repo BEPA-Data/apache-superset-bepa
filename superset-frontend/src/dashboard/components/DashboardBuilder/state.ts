@@ -25,6 +25,7 @@ import {
   useFilters,
   useNativeFiltersDataMask,
 } from '../nativeFilters/FilterBar/state';
+import { Message } from '../AssistantChat/Chat/types';
 
 // eslint-disable-next-line import/prefer-default-export
 export const useNativeFilters = () => {
@@ -70,7 +71,21 @@ export const useNativeFilters = () => {
       setChatOpen(open => visible ?? !open);
     },
     []
-  )
+  );
+
+  const [messages, setMessages] = useState<Message[]>([]);
+  const sendMessage = useCallback(
+    (message: string) => {
+      setMessages(m => [
+        ...m,
+        {
+          text: message,
+          align: 'right',
+        },
+      ]);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (
@@ -97,5 +112,7 @@ export const useNativeFilters = () => {
     nativeFiltersEnabled,
     chatOpen,
     toggleChatOpen,
+    messages,
+    sendMessage,
   };
 };
