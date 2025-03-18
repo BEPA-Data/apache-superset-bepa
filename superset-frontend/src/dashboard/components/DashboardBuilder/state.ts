@@ -66,26 +66,20 @@ export const useNativeFilters = () => {
     [dashboardFiltersOpen],
   );
 
-  const toggleChatOpen = useCallback(
-    (visible?: boolean) => {
-      setChatOpen(open => visible ?? !open);
-    },
-    []
-  );
+  const toggleChatOpen = useCallback((visible?: boolean) => {
+    setChatOpen(open => visible ?? !open);
+  }, []);
 
   const [messages, setMessages] = useState<Message[]>([]);
-  const sendMessage = useCallback(
-    (message: string) => {
-      setMessages(m => [
-        ...m,
-        {
-          text: message,
-          align: 'right',
-        },
-      ]);
-    },
-    [],
-  );
+  const sendMessage = useCallback((message: string) => {
+    setMessages(m => [
+      ...m,
+      {
+        text: message,
+        align: 'right',
+      },
+    ]);
+  }, []);
 
   useEffect(() => {
     if (

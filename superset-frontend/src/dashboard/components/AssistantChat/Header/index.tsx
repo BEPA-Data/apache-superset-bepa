@@ -1,8 +1,7 @@
-import { FC, memo } from "react";
+import { FC, memo } from 'react';
 import { css, styled, t, useTheme } from '@superset-ui/core';
 import Button from 'src/components/Button';
 import Icons from 'src/components/Icons';
-
 
 const TitleArea = styled.div`
   ${({ theme }) => css`
@@ -46,33 +45,30 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled.span`
-    text-align: right;
+  text-align: right;
 `;
 
-
 interface HeaderProps {
-    toggleChatBar: (arg0: boolean) => void;
+  toggleChatBar: (arg0: boolean) => void;
 }
 
-const Header: FC<HeaderProps> = ({
-    toggleChatBar,
-}) => {
-    const theme = useTheme();
-    
-    return (
-        <Wrapper>
-            <TitleArea>
-                <HeaderButton
-                    buttonStyle="link"
-                    buttonSize="xsmall"
-                    onClick={() => toggleChatBar(false)}
-                >
-                    <Icons.Collapse iconColor={theme.colors.grayscale.base} />
-                </HeaderButton>
-                {/* <FilterBarSettings /> */}
-                <Title>{t('AI Assistant')}</Title>
-            </TitleArea>
-        </Wrapper>
-    );
+const Header: FC<HeaderProps> = ({ toggleChatBar }) => {
+  const theme = useTheme();
+
+  return (
+    <Wrapper>
+      <TitleArea>
+        <HeaderButton
+          buttonStyle="link"
+          buttonSize="xsmall"
+          onClick={() => toggleChatBar(false)}
+        >
+          <Icons.Collapse iconColor={theme.colors.grayscale.base} />
+        </HeaderButton>
+        {/* <FilterBarSettings /> */}
+        <Title>{t('AI Assistant')}</Title>
+      </TitleArea>
+    </Wrapper>
+  );
 };
 export default memo(Header);

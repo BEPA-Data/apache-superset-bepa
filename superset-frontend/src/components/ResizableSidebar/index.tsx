@@ -69,10 +69,13 @@ const ResizableSidebar: FC<Props> = ({
 
   return (
     <>
-      <ResizableWrapper right={right} >
+      <ResizableWrapper right={right}>
         <Resizable
-          enable={{ right: (enable && !right), left: (enable && right) }}
-          handleClasses={{ right: (right ? undefined : 'sidebar-resizer'), left: (right ? 'sidebar-resizer' : undefined) }}
+          enable={{ right: enable && !right, left: enable && right }}
+          handleClasses={{
+            right: right ? undefined : 'sidebar-resizer',
+            left: right ? 'sidebar-resizer' : undefined,
+          }}
           size={{ width, height: '100%' }}
           minWidth={minWidth}
           maxWidth={maxWidth}

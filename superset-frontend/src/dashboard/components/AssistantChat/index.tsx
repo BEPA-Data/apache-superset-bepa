@@ -1,14 +1,22 @@
-import { createContext, FC, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import {
+  createContext,
+  FC,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { styled, t } from '@superset-ui/core';
 import Icons from 'src/components/Icons';
 import cx from 'classnames';
 import Loading from 'src/components/Loading';
-import Header from "./Header";
 import { throttle } from 'lodash';
-import Chat from "./Chat";
-import { CSSObject } from "@emotion/react";
-import { Message } from "./Chat/types";
-
+import { CSSObject } from '@emotion/react';
+import Header from './Header';
+import Chat from './Chat';
+import { Message } from './Chat/types';
 
 const BarWrapper = styled.div<{ width: number }>`
   width: ${({ theme }) => theme.gridUnit * 8}px;
@@ -75,99 +83,95 @@ const StyledCollapseIcon = styled(Icons.Expand)`
 `;
 
 const CollapsedLabel = styled.span`
-    writing-mode: sideways-lr;
-    text-wrap-mode: nowrap;
-    font-weight: bold;
-    color: ${({ theme }) => theme.colors.grayscale.base};
+  writing-mode: sideways-lr;
+  text-wrap-mode: nowrap;
+  font-weight: bold;
+  color: ${({ theme }) => theme.colors.grayscale.base};
 `;
 
 export const ChatBarScrollContext = createContext(false);
 
-
 interface Props {
-    isInitialized: boolean;
-    width: number;
-    height: string | number;
-    toggleChatBar: (b: boolean) => void;
-    offset: number;
-    chatOpen: boolean;
-    messages: Message[];
-    sendMessage: (message: string) => void;
+  isInitialized: boolean;
+  width: number;
+  height: string | number;
+  toggleChatBar: (b: boolean) => void;
+  offset: number;
+  chatOpen: boolean;
+  messages: Message[];
+  sendMessage: (message: string) => void;
 }
 
 const AssistentBar: FC<Props> = ({
-    isInitialized,
-    width,
-    toggleChatBar,
-    offset,
-    chatOpen,
-    messages,
-    sendMessage,
+  isInitialized,
+  width,
+  toggleChatBar,
+  offset,
+  chatOpen,
+  messages,
+  sendMessage,
 }) => {
-    const openChatBar = useCallback(
-        () => toggleChatBar(true),
-        [toggleChatBar],
-    );
+  const openChatBar = useCallback(() => toggleChatBar(true), [toggleChatBar]);
 
-    const tabPaneStyle = useMemo(
-        () => ({ overflow: 'auto', flex: 1, overscrollBehavior: 'contain', position: 'relative' } as CSSObject),
-        [],
-      );
+  const tabPaneStyle = useMemo(
+    () =>
+      ({
+        overflow: 'auto',
+        flex: 1,
+        overscrollBehavior: 'contain',
+        position: 'relative',
+      }) as CSSObject,
+    [],
+  );
 
-    const [isScrolling, setIsScrolling] = useState(false);
-    const timeout = useRef<any>();
+  const [isScrolling, setIsScrolling] = useState(false);
+  const timeout = useRef<any>();
 
-    const onScroll = useMemo(
-        () =>
-          throttle(() => {
-            clearTimeout(timeout.current);
-            setIsScrolling(true);
-            timeout.current = setTimeout(() => {
-              setIsScrolling(false);
-            }, 300);
-          }, 200),
-        [],
-      );
+  const onScroll = useMemo(
+    () =>
+      throttle(() => {
+        clearTimeout(timeout.current);
+        setIsScrolling(true);
+        timeout.current = setTimeout(() => {
+          setIsScrolling(false);
+        }, 300);
+      }, 200),
+    [],
+  );
 
-    useEffect(() => {
-        document.onscroll = onScroll;
-        return () => {
-          document.onscroll = null;
-        };
-      }, [onScroll]);
+  useEffect(() => {
+    document.onscroll = onScroll;
+    return () => {
+      document.onscroll = null;
+    };
+  }, [onScroll]);
 
-    return (
-        <ChatBarScrollContext.Provider value={isScrolling}>
-            <BarWrapper
-                className={cx({ open: chatOpen })}
-                width={width}
-            >
-                <CollapsedBar
-                    className={cx({ open: !chatOpen })}
-                    onClick={openChatBar}
-                    role="button"
-                    offset={offset}
-                >
-                    <StyledCollapseIcon
-                        iconSize="l"
-                    />
-                    <CollapsedLabel>{t('AI Assistant')}</CollapsedLabel>
-                    
-                </CollapsedBar>
-                <Bar className={cx({ open: chatOpen })} width={width}>
-                    <Header toggleChatBar={toggleChatBar} />
-                    {!isInitialized ? (
-                    <div css={{ flex: 1 }}>
-                        <Loading />
-                    </div>
-                    ) : (
-                    <div css={tabPaneStyle} onScroll={onScroll} >
-                        <Chat messages={messages} sendMessage={sendMessage} />
-                    </div>
-                    )}
-                </Bar>
-            </BarWrapper>
-        </ChatBarScrollContext.Provider>
-    )
+  return (
+    <ChatBarScrollContext.Provider value={isScrolling}>
+      <BarWrapper className={cx({ open: chatOpen })} width={width}>
+        <CollapsedBar
+          className={cx({ open: !chatOpen })}
+          onClick={openChatBar}
+          role="button"
+          offset={offset}
+        >
+          <StyledCollapseIcon iconSize="l" />
+          <CollapsedLabel>{t('AI Assistant')}</CollapsedLabel>
+        </CollapsedBar>
+        <Bar className={cx({ open: chatOpen })} width={width}>
+          <Header toggleChatBar={toggleChatBar} />
+          {!isInitialized ? (
+            <div css={{ flex: 1 }}>
+              <Loading />
+            </div>
+          ) : (
+            <div css={tabPaneStyle} onScroll={onScroll}>
+              <Chat messages={messages} sendMessage={sendMessage} />
+            </div>
+          )}
+        </Bar>
+      </BarWrapper>
+    </ChatBarScrollContext.Provider>
+  );
 };
 export default memo(AssistentBar);

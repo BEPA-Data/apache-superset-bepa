@@ -103,7 +103,7 @@ const ChatPanel = styled.div<{ width: number; hidden: boolean }>`
   ${({ hidden }) => hidden && `display: none;`}
 `;
 
-const StickyPanel = styled.div<{ width: number, height: string }>`
+const StickyPanel = styled.div<{ width: number; height: string }>`
   position: sticky;
   top: -1px;
   width: ${({ width }) => width}px;
@@ -491,13 +491,19 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [chatBarSize, setChatBarSize] = useState(0);
   useEffect(() => {
-    setFilterBarSize(filterContainerRef.current?.getBoundingClientRect()?.top || 0);
+    setFilterBarSize(
+      filterContainerRef.current?.getBoundingClientRect()?.top || 0,
+    );
     setChatBarSize(chatContainerRef.current?.getBoundingClientRect()?.top || 0);
 
     const onScroll = () => {
-      setFilterBarSize(filterContainerRef.current?.getBoundingClientRect()?.top || 0);
-      setChatBarSize(chatContainerRef.current?.getBoundingClientRect()?.top || 0);
-    }
+      setFilterBarSize(
+        filterContainerRef.current?.getBoundingClientRect()?.top || 0,
+      );
+      setChatBarSize(
+        chatContainerRef.current?.getBoundingClientRect()?.top || 0,
+      );
+    };
 
     document.addEventListener('scroll', onScroll);
 
@@ -511,7 +517,6 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
 
   const filterBarHeight = `calc(100vh - ${filterBarSize}px)`;
   const filterBarOffset = dashboardFiltersOpen ? 0 : barTopOffset + 20;
-
 
   const showChatBar = !editMode;
 
@@ -527,10 +532,7 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
         filterBarOrientation === FilterBarOrientation.Horizontal
           ? 0
           : -32,
-      marginRight:
-        chatOpen || editMode
-          ? 0
-          : -CLOSED_CHAT_BAR_WIDTH,
+      marginRight: chatOpen || editMode ? 0 : -CLOSED_CHAT_BAR_WIDTH,
     }),
     [
       dashboardFiltersOpen,
@@ -621,10 +623,8 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
       ? 0
       : theme.gridUnit * 8;
 
-  const dashboardContentMarginRight = 
-    !chatOpen && !editMode 
-      ? 0 
-      : CLOSED_CHAT_BAR_WIDTH;
+  const dashboardContentMarginRight =
+    !chatOpen && !editMode ? 0 : CLOSED_CHAT_BAR_WIDTH;
 
   return (
     <DashboardWrapper>
@@ -648,7 +648,11 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
                     hidden={isReport}
                     data-test="dashboard-filters-panel"
                   >
-                    <StickyPanel ref={filterContainerRef} height={filterBarHeight} width={filterBarWidth}>
+                    <StickyPanel
+                      ref={filterContainerRef}
+                      height={filterBarHeight}
+                      width={filterBarWidth}
+                    >
                       <ErrorBoundary>
                         <FilterBar
                           orientation={FilterBarOrientation.Vertical}
@@ -739,8 +743,8 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
                     title={t('Unable to load dashboard')}
                     body={t(
                       `The following filters have the 'Select first filter value by default'
-                    option checked and could not be loaded, which is preventing the dashboard
-                    from rendering: %s`,
+                      option checked and could not be loaded, which is preventing the dashboard
+                      from rendering: %s`,
                       missingInitialFilters.join(', '),
                     )}
                   />
@@ -763,27 +767,31 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
             initialWidth={OPEN_CHAT_BAR_WIDTH}
             minWidth={OPEN_CHAT_BAR_WIDTH}
             maxWidth={OPEN_CHAT_BAR_MAX_WIDTH}
-            right={true}
+            right
           >
             {adjustedWidth => {
               const chatBarWidth = chatOpen
-              ? adjustedWidth
-              : CLOSED_CHAT_BAR_WIDTH;
+                ? adjustedWidth
+                : CLOSED_CHAT_BAR_WIDTH;
               return (
                 <ChatPanel
                   width={chatBarWidth}
                   hidden={isReport}
                   data-test="dashboard-filters-panel"
                 >
-                  <StickyPanel ref={chatContainerRef} width={chatBarWidth} height={chatBarHeight}>
+                  <StickyPanel
+                    ref={chatContainerRef}
+                    width={chatBarWidth}
+                    height={chatBarHeight}
+                  >
                     <ErrorBoundary>
                       <AssistantChat
-                        isInitialized={true}
+                        isInitialized={showDashboard}
                         chatOpen={chatOpen}
                         toggleChatBar={toggleChatOpen}
                         width={chatBarWidth}
                         offset={chatBarOffset}
-                        height={'100%'}
+                        height="100%"
                         messages={messages}
                         sendMessage={sendMessage}
                       />

@@ -1,4 +1,4 @@
 export interface Message {
-    text: string;
-    align: string;
+  text: string;
+  align: string;
 }
