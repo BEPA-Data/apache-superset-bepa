@@ -47,9 +47,7 @@ class AuthBEPAView(AuthDBView):
             return redirect(self.appbuilder.get_url_for_index)
 
         # Call API to get the user ID and role using the cookie
-        # cookie_value = request.cookies["bepa_session"]
-        cookie_value = "test_cookie"
-        user_data: UserData = fetch_user_info(cookie_value, self.appbuilder.get_app)
+        user_data: UserData = fetch_user_info(self.appbuilder.get_app)
 
         if user_data is None:
             flash(as_unicode(self.invalid_login_message), "warning")
@@ -64,7 +62,14 @@ class AuthBEPAView(AuthDBView):
         # Retrieve or create the user based on the ID
         user = self.appbuilder.sm.get_user_by_id(user_id)
         if not user:
-            user = self.appbuilder.sm.create_user(user_id, role_name)
+            user = self.appbuilder.sm.create_user(
+                user_id, 
+                role_name,
+                user_data.email, 
+                user_data.first_name, 
+                user_data.last_name, 
+                user_data.username
+            )
 
         # Check if user has correct role
         correct_roles = [role for role in user.roles if role.name == role_name]

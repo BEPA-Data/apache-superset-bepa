@@ -209,7 +209,7 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
     EXTERNAL_ROLES = ["Admin", "Alpha", "Gamma"]
 
     # BEPA authentication
-    def create_user(self, user_id, role_name) -> User | None:
+    def create_user(self, user_id, role_name, email, first_name, last_name, username) -> User | None:
         try:
             # Get role
             role = self.find_role(role_name)
@@ -217,12 +217,12 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
             # Create the user
             new_user = User(
                 id=user_id,
-                first_name=f"fn{user_id}",
-                last_name="ln",
-                email=f"name{user_id}@domain.com",
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
                 active=True,
-                username=f"test{user_id}",
-                password="test",
+                username=username,
+                password="no",
                 roles=[role],
             )
 
