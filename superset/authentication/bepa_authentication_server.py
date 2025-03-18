@@ -42,6 +42,8 @@ def fetch_user_info(app: Flask) -> UserData | None:
             # Check if the roles contains admin
             if UserRole.admin.value.lower() in userroles:
                 role = UserRole.admin
+            else:
+                role = UserRole.gamma
 
             user = UserData(
                 ID=userinfo.get("sub"), 
