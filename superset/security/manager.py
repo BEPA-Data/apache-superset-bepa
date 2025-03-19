@@ -209,39 +209,13 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
     EXTERNAL_ROLES = ["Admin", "Alpha", "Gamma"]
 
     # BEPA authentication
-    def create_user(self, user_id, role_name, email, first_name, last_name, username) -> User | None:
-        try:
-            # Get role
-            role = self.find_role(role_name)
-
-            # Create the user
-            new_user = User(
-                id=user_id,
-                first_name=first_name,
-                last_name=last_name,
-                email=email,
-                active=True,
-                username=username,
-                password="no",
-                roles=[role],
-            )
-
-            self.get_session.add(new_user)
-            self.get_session.commit()
-            logger.info(const.LOGMSG_INF_SEC_ADD_USER, new_user.username)
-            return new_user
-        except Exception as e:
-            logger.error(const.LOGMSG_ERR_SEC_ADD_USER, e)
-            self.get_session.rollback()
-            return None
-    
-    def change_user_external_role(self, user_id, role_name):
+    def change_user_external_role(self, email, role_name):
         # Check if role is external.
         if role_name not in self.EXTERNAL_ROLES:
             return
 
         # Get user.
-        user = self.get_user_by_id(user_id)
+        user = self.find_user(email=email)
 
         # Check if user already has role.
         existing_roles = [role for role in user.roles if role.name == role_name]

@@ -46,8 +46,15 @@ class AuthBEPAView(AuthDBView):
         if g.user is not None and g.user.is_authenticated:
             return redirect(self.appbuilder.get_url_for_index)
 
+        # Fetch the cookie from the request
+        BEPA_AUTH_COOKIE_NAME = self.appbuilder.get_app.config["BEPA_AUTH_COOKIE_NAME"]
+        if BEPA_AUTH_COOKIE_NAME in request.cookies:
+            cookie_value = request.cookies[BEPA_AUTH_COOKIE_NAME]
+        else:
+            cookie_value = None
+
         # Call API to get the user ID and role using the cookie
-        user_data: UserData = fetch_user_info(self.appbuilder.get_app)
+        user_data: UserData = fetch_user_info(cookie_value, self.appbuilder.get_app)
 
         if user_data is None:
             flash(as_unicode(self.invalid_login_message), "warning")
@@ -56,25 +63,25 @@ class AuthBEPAView(AuthDBView):
             )
             pass
 
-        user_id = user_data.ID  # Get the ID from the API response
         role_name = user_data.role  # Get the role from the API response
 
         # Retrieve or create the user based on the ID
-        user = self.appbuilder.sm.get_user_by_id(user_id)
+        user = self.appbuilder.sm.find_user(email=user_data.email)
         if not user:
-            user = self.appbuilder.sm.create_user(
-                user_id, 
-                role_name,
-                user_data.email, 
-                user_data.first_name, 
-                user_data.last_name, 
-                user_data.username
+            # Get role
+            role = self.appbuilder.sm.find_role(role_name)
+            user = self.appbuilder.sm.add_user(
+                user_data.username,
+                user_data.firstname,
+                user_data.lastname,
+                user_data.email,
+                [role],
             )
 
         # Check if user has correct role
         correct_roles = [role for role in user.roles if role.name == role_name]
         if len(correct_roles) == 0:
-            self.appbuilder.sm.change_user_external_role(user_id, role_name)
+            self.appbuilder.sm.change_user_external_role(user_data.email, role_name)
 
         login_user(user)
 

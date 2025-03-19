@@ -12,21 +12,22 @@ class UserRole(str, Enum):
 
 
 class UserData(BaseModel):
-    ID: str
     email: str
     firstname: str
     lastname: str
     role: UserRole
     username: str
 
-def fetch_user_info(app: Flask) -> UserData | None:
+def fetch_user_info(cookie: str, app: Flask) -> UserData | None:
     BEPA_AUTH_URL = app.config["BEPA_AUTH_URL"]
     BEPA_USERINFO_URL = app.config["BEPA_USERINFO_URL"]
     BEPA_AUTH_PROJECT_ID = app.config["BEPA_AUTH_PROJECT_ID"]
+    BEPA_AUTH_COOKIE_NAME = app.config["BEPA_AUTH_COOKIE_NAME"]
 
     try:
-        response = requests.get(BEPA_AUTH_URL, timeout=5)
-        if response.status_code == 200:
+        cookies = {BEPA_AUTH_COOKIE_NAME: cookie}
+        response = requests.get(BEPA_AUTH_URL, cookies=cookies, timeout=5)
+        if response.status_code >= 200 and response.status_code < 300:
             access_token = response.headers.get("x-auth-request-access-token")
         else:
             return None
@@ -35,7 +36,7 @@ def fetch_user_info(app: Flask) -> UserData | None:
     
     try:
         response = requests.get(BEPA_USERINFO_URL, headers={"Authorization": f"Bearer {access_token}"}, timeout=5)
-        if response.status_code == 200:
+        if response.status_code >= 200 and response.status_code < 300:
             userinfo = response.json()
             rolekey = f"urn:zitadel:iam:org:project:{BEPA_AUTH_PROJECT_ID}:roles"
             userroles = userinfo.get(rolekey, {})
@@ -45,13 +46,13 @@ def fetch_user_info(app: Flask) -> UserData | None:
             else:
                 role = UserRole.gamma
 
+            email = userinfo.get("email")
             user = UserData(
-                ID=userinfo.get("sub"), 
                 role=role,
-                email=userinfo.get("email"),
-                firstname=userinfo.get("given_name"),
-                lastname=userinfo.get("family_name"),
-                username=userinfo.get("preferred_username")
+                email=email,
+                firstname=userinfo.get("given_name", ""),
+                lastname=userinfo.get("family_name", ""),	
+                username=userinfo.get("preferred_username", email)
             )
             return user
         else:
